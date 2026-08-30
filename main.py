@@ -1,6 +1,6 @@
+```python
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 
 # 페이지 설정
 st.set_page_config(
@@ -25,9 +25,6 @@ def load_data():
     for column in ["평균기온", "최저기온", "최고기온"]:
         df[column] = pd.to_numeric(df[column], errors="coerce")
 
-    # 날짜와 평균기온이 없는 데이터 제거
-    df = df.dropna(subset=["날짜", "평균기온"])
-
     return df
 
 
@@ -46,10 +43,6 @@ st.write(
 # 원본 데이터 요약통계
 # ---------------------------------------
 st.subheader("📊 원본 데이터 요약통계")
-
-st.write(
-    "원본 데이터의 평균기온, 최저기온, 최고기온에 대한 요약통계입니다."
-)
 
 summary = df[["평균기온", "최저기온", "최고기온"]].describe()
 
@@ -79,51 +72,32 @@ st.dataframe(
 # ---------------------------------------
 df["연도"] = df["날짜"].dt.year
 
-yearly_temp = (
-    df.groupby("연도")["평균기온"]
-    .mean()
-    .reset_index()
+yearly_temp = df.groupby("연도")["평균기온"].mean()
+
+# 전체 연도 범위를 만들고,
+# 데이터가 없는 연도는 NaN으로 남김
+all_years = range(
+    int(df["연도"].min()),
+    int(df["연도"].max()) + 1
 )
 
-yearly_temp.columns = ["연도", "연평균기온"]
-yearly_temp = yearly_temp.sort_values("연도")
+yearly_temp = yearly_temp.reindex(all_years)
+yearly_temp.index.name = "연도"
 
 
 # ---------------------------------------
-# 그래프
+# 연평균 기온 그래프
 # ---------------------------------------
 st.subheader("📈 연도별 연평균 기온")
 
-fig = px.line(
+st.line_chart(
     yearly_temp,
-    x="연도",
-    y="연평균기온",
-    markers=True,
-    labels={
-        "연도": "연도",
-        "연평균기온": "연평균 기온 (℃)"
-    },
-    title="서울 연도별 연평균 기온"
+    y_label="연평균 기온 (℃)",
+    x_label="연도"
 )
 
-# 데이터가 없는 구간은 선으로 연결하지 않음
-fig.update_traces(
-    connectgaps=False,
-    hovertemplate="연도: %{x}<br>연평균 기온: %{y:.2f} ℃<extra></extra>"
-)
-
-fig.update_layout(
-    hovermode="x unified",
-    height=550
-)
-
-st.plotly_chart(
-    fig,
-    use_container_width=True
-)
-
-st.info(
-    "💡 그래프에서 마우스로 원하는 구간을 드래그하면 확대할 수 있습니다."
+st.caption(
+    "※ 데이터가 없는 연도는 그래프에서 선으로 연결하지 않습니다."
 )
 
 
@@ -131,8 +105,9 @@ st.info(
 # 연도별 데이터
 # ---------------------------------------
 with st.expander("📋 연도별 연평균 기온 데이터 보기"):
-    display_data = yearly_temp.copy()
-    display_data["연평균기온"] = display_data["연평균기온"].round(2)
+    display_data = yearly_temp.reset_index()
+    display_data["연평균기온"] = display_data["평균기온"].round(2)
+    display_data = display_data[["연도", "연평균기온"]]
 
     st.dataframe(
         display_data,
@@ -150,3 +125,4 @@ with st.expander("📄 원본 데이터 보기"):
         use_container_width=True,
         hide_index=True
     )
+```
