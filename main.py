@@ -90,7 +90,7 @@ yearly_temp = yearly_temp.sort_values("연도")
 
 
 # ---------------------------------------
-# 연평균 기온 그래프
+# 그래프
 # ---------------------------------------
 st.subheader("📈 연도별 연평균 기온")
 
@@ -106,24 +106,24 @@ fig = px.line(
     title="서울 연도별 연평균 기온"
 )
 
+# 데이터가 없는 구간은 선으로 연결하지 않음
+fig.update_traces(
+    connectgaps=False,
+    hovertemplate="연도: %{x}<br>연평균 기온: %{y:.2f} ℃<extra></extra>"
+)
+
 fig.update_layout(
     hovermode="x unified",
     height=550
 )
 
-fig.update_traces(
-    hovertemplate="연도: %{x}<br>연평균 기온: %{y:.2f} ℃<extra></extra>"
-)
-
-# 그래프 표시
 st.plotly_chart(
     fig,
     use_container_width=True
 )
 
 st.info(
-    "💡 그래프에서 마우스로 원하는 구간을 드래그하면 해당 기간을 확대해서 볼 수 있습니다. "
-    "확대 후 그래프 위의 '전체 보기' 버튼을 누르면 원래 화면으로 돌아갑니다."
+    "💡 그래프에서 마우스로 원하는 구간을 드래그하면 확대할 수 있습니다."
 )
 
 
