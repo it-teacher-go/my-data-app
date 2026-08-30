@@ -43,7 +43,10 @@ st.write(
 # ---------------------------------------
 st.subheader("📊 원본 데이터 요약통계")
 
-summary = df[["평균기온", "최저기온", "최고기온"]].describe()
+# 지점을 포함한 요약통계
+summary = df[
+    ["지점", "평균기온", "최저기온", "최고기온"]
+].describe()
 
 summary = summary.rename(
     index={
